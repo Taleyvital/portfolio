@@ -1,0 +1,46 @@
+export const meta = {
+  slug: "devis-maker",
+  titre: "Devis Maker",
+  resultat: "Des devis et factures conformes en moins de 5 minutes pour les artisans",
+  description:
+    "Étude de cas Devis Maker : SaaS de devis et de factures pour artisans francophones, de la modélisation à la facturation.",
+  composant: "Quartier Web & SaaS",
+  role: "Product owner technique et développeur principal",
+  periode: "2025 – en cours",
+  stack: ["Next.js", "TypeScript", "Supabase", "Génération PDF"],
+  lien: "https://example.com/devis-maker",
+  ordre: 2,
+};
+
+> **[DÉMO]** Contenu de démonstration à remplacer par l'étude de cas réelle.
+
+## Problème
+
+Les artisans rédigeaient leurs devis sous Word ou sur papier, avec des mentions légales souvent incomplètes et des montants recopiés à la main dans les factures.
+
+## Mon rôle
+
+J'ai mené les entretiens avec des artisans, défini le modèle de données et développé l'application. Je gère aussi les mises en production.
+
+## Contraintes
+
+- Utilisateurs peu à l'aise avec l'informatique, souvent sur téléphone.
+- Mentions obligatoires différentes selon le pays (France, Côte d'Ivoire).
+- Une facture émise ne doit plus jamais être modifiée.
+
+## Décisions
+
+<Schema titre="C4 · niveau 1 (contexte)">Schéma à insérer : artisan, client final, Devis Maker, service d'e-mail, stockage des PDF.</Schema>
+
+1. **La facture est un instantané immuable du devis.** On ne la recalcule jamais ; on émet un avoir pour corriger.
+2. **Bibliothèque de prestations par métier.** L'artisan part d'un modèle au lieu d'une page blanche.
+3. **PDF généré côté serveur.** Le rendu est identique quel que soit le téléphone.
+
+## Résultat
+
+- [DÉMO] 40 artisans inscrits pendant la bêta.
+- [DÉMO] Temps moyen de création d'un devis : 4 min 30.
+
+## Ce que je referais autrement
+
+Je testerais le parcours sur téléphone avec des artisans avant d'écrire la version bureau.

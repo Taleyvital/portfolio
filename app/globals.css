@@ -1,0 +1,1213 @@
+/* ==========================================================================
+   Identité « circuit imprimé » : fond de PCB sombre, sérigraphie claire,
+   pastilles cuivre, LED verte. Toutes les couleurs passent par ces tokens.
+   ========================================================================== */
+
+:root {
+  --board: #07110d;         /* substrat du PCB */
+  --board-raised: #0c1a14;  /* composants, cartes */
+  --board-hover: #10231a;
+  --trace: #1d3a2b;         /* pistes, bordures */
+  --trace-strong: #2c5541;
+  --silk: #e8efe9;          /* sérigraphie : texte principal */
+  --silk-muted: #a9bfb2;    /* texte secondaire, contraste ≥ 7:1 */
+  --copper: #d9a441;        /* pastilles : accent, CTA */
+  --copper-strong: #e8b85a;
+  --on-copper: #07110d;
+  --led: #3ddc84;           /* LED d'état, focus */
+
+  /* --font-sans et --font-mono sont définies par next/font (app/layout.tsx). */
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  --radius: 6px;
+  --container: 72rem;
+  --gutter: 1rem;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  color-scheme: dark;
+}
+
+@media (min-width: 48rem) {
+  :root { --gutter: 2rem; }
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--board);
+  /* Pistes et vias en SVG inline : quelques centaines d'octets, aucune requête. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' fill='none' stroke='%23122a1f' stroke-width='1.5'%3E%3Cpath d='M0 40h50l20 20h90M40 0v30l-20 20v110M100 160v-40l20-20h40M120 0v20l-30 30H60'/%3E%3Ccircle cx='70' cy='60' r='3.5'/%3E%3Ccircle cx='120' cy='100' r='3.5'/%3E%3Ccircle cx='60' cy='50' r='3.5'/%3E%3C/svg%3E");
+  color: var(--silk);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  flex: 1;
+}
+
+main:focus {
+  outline: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+h1 { font-size: clamp(2.5rem, 6vw + 1rem, 4.5rem); }
+h2 { font-size: clamp(1.6rem, 2.5vw + 1rem, 2.25rem); }
+h3 { font-size: 1.35rem; }
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--led);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--copper);
+  color: var(--on-copper);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -4rem;
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  background: var(--copper);
+  color: var(--on-copper);
+  font-weight: 600;
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: var(--space-4);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.muted {
+  color: var(--silk-muted);
+}
+
+.lead {
+  font-size: 1.15rem;
+  color: var(--silk-muted);
+  max-width: 40rem;
+}
+
+/* Repère sérigraphié : « U2 · NPU », « J1 »… */
+.silk {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--copper);
+}
+
+.led {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--led);
+  box-shadow: 0 0 8px var(--led);
+}
+
+/* ---------- En-tête ---------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--board) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--trace);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  min-height: 4rem;
+  padding-block: var(--space-2);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Petite puce avec ses pattes, en CSS pur. */
+.brand-chip {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--copper);
+  border-radius: 2px;
+  box-shadow:
+    -5px 0 0 -3px var(--copper),
+    5px 0 0 -3px var(--copper);
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+
+.nav-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  border-radius: var(--radius);
+  color: var(--silk-muted);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.nav-links a:hover {
+  color: var(--silk);
+  background: var(--board-hover);
+}
+
+.nav-links a[aria-current="page"] {
+  color: var(--silk);
+  box-shadow: inset 0 -2px 0 var(--copper);
+}
+
+/* ---------- Boutons et liens ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), transform 150ms var(--ease);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--copper);
+  color: var(--on-copper);
+}
+
+.btn-primary:hover {
+  background: var(--copper-strong);
+}
+
+.btn-secondary {
+  border: 1px solid var(--trace-strong);
+  color: var(--silk);
+}
+
+.btn-secondary:hover {
+  border-color: var(--copper);
+  background: var(--board-hover);
+}
+
+.text-link {
+  color: var(--copper);
+  font-weight: 600;
+  text-underline-offset: 4px;
+}
+
+.text-link:hover {
+  color: var(--copper-strong);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.inline-links {
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.inline-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--silk-muted);
+  text-underline-offset: 4px;
+}
+
+.inline-links a:hover {
+  color: var(--silk);
+}
+
+/* ---------- Accueil ---------- */
+
+.hero {
+  display: grid;
+  gap: var(--space-12);
+  padding-block: var(--space-16) var(--space-12);
+}
+
+@media (min-width: 64rem) {
+  .hero {
+    grid-template-columns: 1fr 22rem;
+    align-items: end;
+    padding-block: var(--space-24) var(--space-16);
+  }
+}
+
+.hero h1 {
+  margin-top: var(--space-3);
+}
+
+.hero-title {
+  margin-top: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 1vw + 0.85rem, 1.25rem);
+  font-weight: 500;
+}
+
+.hero-title .sep {
+  color: var(--trace-strong);
+  margin-inline: var(--space-2);
+}
+
+.hero .lead {
+  margin-top: var(--space-6);
+}
+
+/* Horloge RTC : bloc de disponibilité. */
+.rtc {
+  padding: var(--space-6);
+  background: var(--board-raised);
+  border: 1px solid var(--trace-strong);
+  border-radius: var(--radius);
+}
+
+.rtc dl {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+dt {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--silk-muted);
+}
+
+dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.section {
+  padding-block: var(--space-16);
+  border-top: 1px solid var(--trace);
+}
+
+.section-head {
+  margin-bottom: var(--space-8);
+}
+
+.section-head h2 {
+  margin-top: var(--space-2);
+}
+
+.section-head .muted {
+  margin-top: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 48rem) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Carte projet : une puce posée sur le PCB, avec ses pattes latérales. */
+.chip-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+  background: var(--board-raised);
+  border: 1px solid var(--trace-strong);
+  border-radius: var(--radius);
+  transition: border-color 200ms var(--ease), background-color 200ms var(--ease);
+}
+
+.chip-card::before,
+.chip-card::after {
+  content: "";
+  position: absolute;
+  top: var(--space-8);
+  bottom: var(--space-8);
+  width: 6px;
+  background: repeating-linear-gradient(to bottom, var(--trace-strong) 0 6px, transparent 6px 16px);
+}
+
+.chip-card::before { left: -7px; }
+.chip-card::after { right: -7px; }
+
+.chip-card:hover,
+.chip-card:focus-within {
+  border-color: var(--copper);
+  background: var(--board-hover);
+}
+
+.chip-card:hover::before,
+.chip-card:hover::after,
+.chip-card:focus-within::before,
+.chip-card:focus-within::after {
+  background: repeating-linear-gradient(to bottom, var(--copper) 0 6px, transparent 6px 16px);
+}
+
+.card-link {
+  text-decoration: none;
+}
+
+/* Toute la carte est cliquable, mais un seul lien est annoncé. */
+.card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+
+.card-link:focus-visible {
+  outline: none;
+}
+
+.card-link:focus-visible::after {
+  outline: 2px solid var(--led);
+  outline-offset: 3px;
+}
+
+.chip-result {
+  color: var(--silk-muted);
+}
+
+.chip-cta {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--copper);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.tags li {
+  padding: 0.15rem var(--space-2);
+  border: 1px solid var(--trace-strong);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--silk-muted);
+}
+
+.split {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 48rem) {
+  .split { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+
+.split h2 {
+  margin-top: var(--space-2);
+}
+
+.split .lead {
+  margin-bottom: var(--space-4);
+}
+
+.io-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border: 1px dashed var(--copper);
+  border-radius: var(--radius);
+  background: var(--board-raised);
+}
+
+.io-band h2 {
+  margin-top: var(--space-2);
+}
+
+/* ---------- Pages internes ---------- */
+
+.page {
+  padding-block: var(--space-12) var(--space-16);
+}
+
+.breadcrumb {
+  margin-bottom: var(--space-8);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--silk-muted);
+}
+
+.breadcrumb a {
+  color: var(--silk-muted);
+  text-underline-offset: 4px;
+}
+
+.breadcrumb a:hover {
+  color: var(--silk);
+}
+
+.page-head {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  padding-bottom: var(--space-12);
+  margin-bottom: var(--space-12);
+  border-bottom: 1px solid var(--trace);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  margin-block: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .facts { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Contenu MDX */
+.prose {
+  max-width: 44rem;
+}
+
+.prose > * + * {
+  margin-top: var(--space-4);
+}
+
+.prose h2 {
+  margin-top: var(--space-12);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--trace);
+  font-size: 1.6rem;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: var(--space-6);
+}
+
+.prose li + li {
+  margin-top: var(--space-2);
+}
+
+.prose li::marker {
+  color: var(--copper);
+}
+
+.prose strong {
+  color: var(--silk);
+}
+
+.prose blockquote {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--copper);
+  background: var(--board-raised);
+  color: var(--silk-muted);
+}
+
+.prose a {
+  color: var(--copper);
+  text-underline-offset: 4px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--trace-strong);
+  border-radius: var(--radius);
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--trace);
+}
+
+.prose th {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--silk-muted);
+  background: var(--board-raised);
+}
+
+.prose tr:last-child td {
+  border-bottom: 0;
+}
+
+.schema {
+  margin-block: var(--space-8);
+  padding: var(--space-4);
+  border: 1px dashed var(--trace-strong);
+  border-radius: var(--radius);
+}
+
+.schema-body {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  margin-top: var(--space-3);
+  padding: var(--space-6);
+  background: var(--board-raised);
+  border-radius: 3px;
+  color: var(--silk-muted);
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.next-project {
+  max-width: 44rem;
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--trace);
+}
+
+.next-project .text-link {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: 1.15rem;
+}
+
+/* Ports de contact */
+.ports {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 !important;
+  margin-block: var(--space-8);
+  list-style: none;
+}
+
+.ports li + li {
+  margin-top: 0;
+}
+
+.port {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  align-items: center;
+  gap: 0 var(--space-4);
+  min-height: 56px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--board-raised);
+  border: 1px solid var(--trace-strong);
+  border-radius: var(--radius);
+  color: var(--silk) !important;
+  text-decoration: none;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.port:hover {
+  border-color: var(--copper);
+  background: var(--board-hover);
+}
+
+.port .silk {
+  grid-row: span 2;
+}
+
+.port-label {
+  font-weight: 600;
+}
+
+.port-value {
+  color: var(--silk-muted);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Pied de page ---------- */
+
+.site-footer {
+  border-top: 1px solid var(--trace);
+  background: var(--board);
+  color: var(--silk-muted);
+  font-size: 0.9rem;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-8);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-underline-offset: 4px;
+}
+
+.footer-links a:hover {
+  color: var(--silk);
+}
+
+/* ---------- Couche 3D ---------- */
+
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.nav-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.scene-toggle {
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--copper);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--copper);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease), color 150ms var(--ease);
+}
+
+.scene-toggle:hover {
+  background: var(--copper);
+  color: var(--on-copper);
+}
+
+/* Emplacement réservé dès le rendu serveur : le bouton apparaît sans décaler la page. */
+.scene-toggle[data-visible="false"] {
+  visibility: hidden;
+}
+
+.scene-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 600ms var(--ease);
+}
+
+.scene-layer[data-loaded="true"] {
+  opacity: 1;
+}
+
+.scene-dock {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--board) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--trace-strong);
+  border-radius: var(--radius);
+}
+
+.dock-btn {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--trace-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--silk);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.dock-btn:hover {
+  border-color: var(--copper);
+}
+
+.dock-btn[aria-pressed="true"] {
+  border-color: var(--copper);
+  color: var(--copper);
+}
+
+.scene-debug {
+  position: fixed;
+  top: 5rem;
+  left: 50%;
+  z-index: 70;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--board);
+  border: 1px solid var(--led);
+  color: var(--led);
+  font: 0.75rem/1.4 var(--font-mono);
+  pointer-events: none;
+}
+
+/* HUD de la visite et barre du panneau : n'existent visuellement qu'en mode 3D. */
+.room-hud,
+.panel-bar {
+  display: none;
+}
+
+/* ===== Mode 3D : la pièce occupe tout l'écran ===== */
+
+[data-scene="on"] body {
+  background: #14111c;
+  overflow: hidden;
+}
+
+[data-scene="on"] .site-footer {
+  display: none;
+}
+
+[data-scene="on"] .site-header {
+  background: color-mix(in srgb, #14111c 70%, transparent);
+  border-bottom-color: transparent;
+}
+
+/* Vue « carte » (accueil) : le HUD de la visite remplace le contenu de la page. */
+[data-scene="on"][data-view="map"] main {
+  display: none;
+}
+
+[data-scene="on"][data-view="map"] .room-hud {
+  display: block;
+}
+
+.room-hud {
+  position: fixed;
+  inset: 4.75rem var(--space-4) var(--space-4);
+  z-index: 10;
+  pointer-events: none; /* hors des textes, le pointeur atteint la pièce */
+  color: #f6f3fb;
+}
+
+.room-hud > * {
+  pointer-events: auto;
+}
+
+/* Une seule étape visible à la fois ; sans html[data-station] (avant le JS), c'est l'intro. */
+.tour-step {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 350ms var(--ease), transform 350ms var(--ease), visibility 0s linear 350ms;
+}
+
+html:not([data-station]) .tour-step[data-step="0"],
+html[data-station="0"] .tour-step[data-step="0"],
+html[data-station="1"] .tour-step[data-step="1"],
+html[data-station="2"] .tour-step[data-step="2"],
+html[data-station="3"] .tour-step[data-step="3"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+/* Intro : le nom « écrit au mur », centré en haut, comme dans la vidéo de référence. */
+.tour-intro {
+  top: 1rem;
+  left: 50%;
+  width: min(40rem, 100%);
+  translate: -50% 0;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  text-shadow: 0 1px 12px rgb(20 17 28 / 0.6);
+}
+
+.tour-intro h1 {
+  font-size: clamp(2rem, 2.5vw + 1rem, 3.25rem);
+  letter-spacing: -0.02em;
+}
+
+.tour-title {
+  font-size: 1.15rem;
+}
+
+.tour-facts {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: #e4dcf5;
+}
+
+.tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.tour-actions .btn,
+.tour-side .btn {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.9rem;
+}
+
+.tour-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  font-size: 0.85rem;
+  color: #e4dcf5;
+}
+
+.tour-hint-mouse {
+  position: relative;
+  width: 18px;
+  height: 28px;
+  border: 2px solid currentColor;
+  border-radius: 10px;
+}
+
+.tour-hint-mouse::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 2px;
+  height: 6px;
+  translate: -50% 0;
+  background: currentColor;
+  border-radius: 1px;
+  animation: tour-wheel 1.6s var(--ease) infinite;
+}
+
+@keyframes tour-wheel {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(8px); }
+}
+
+/* Étapes suivantes : texte à gauche, sur un fond sombre pour le contraste. */
+.tour-side {
+  top: 0;
+  left: 0;
+  display: grid;
+  gap: var(--space-4);
+  width: min(26rem, 100%);
+  padding: var(--space-6);
+  background: color-mix(in srgb, #14111c 84%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 10px;
+}
+
+.tour-side h2 {
+  font-size: 1.75rem;
+}
+
+.tour-lead {
+  color: #e4dcf5;
+  line-height: 1.6;
+}
+
+.tour-list,
+.tour-links {
+  display: grid;
+  gap: 2px;
+  padding: 0;
+  list-style: none;
+}
+
+.tour-list a {
+  display: grid;
+  gap: 2px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 6px;
+  color: #f6f3fb;
+  text-decoration: none;
+  transition: background-color 150ms var(--ease);
+}
+
+.tour-list a span {
+  font-size: 0.85rem;
+  color: #d6cdea;
+}
+
+.tour-list a:hover,
+.tour-list a:focus-visible {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.tour-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #f6f3fb;
+}
+
+/* Points d'étape, à droite. */
+.tour-rail {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  translate: 0 -50%;
+}
+
+.tour-rail ol {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+
+.tour-rail button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: #e4dcf5;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.tour-rail-dot {
+  order: 2;
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.tour-rail-label {
+  opacity: 0;
+  transition: opacity 150ms var(--ease);
+}
+
+.tour-rail button:hover .tour-rail-label,
+.tour-rail button:focus-visible .tour-rail-label,
+.tour-rail button[aria-current="step"] .tour-rail-label {
+  opacity: 1;
+}
+
+.tour-rail button[aria-current="step"] {
+  color: #ffffff;
+}
+
+.tour-rail button[aria-current="step"] .tour-rail-dot {
+  background: var(--copper);
+  border-color: var(--copper);
+}
+
+/* Vue « panneau » : la page s'ouvre à gauche, par-dessus la pièce, et défile seule.
+   Largeur 46rem : même valeur que PANEL dans components/scene/RoomCamera.tsx. */
+[data-scene="on"][data-view="panel"] main {
+  position: fixed;
+  top: 4.75rem;
+  bottom: var(--space-4);
+  left: var(--space-4);
+  z-index: 10;
+  width: min(46rem, calc(100vw - 2 * var(--space-4)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: color-mix(in srgb, var(--board) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--trace-strong);
+  border-radius: var(--radius);
+}
+
+[data-scene="on"][data-view="panel"] .panel-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-6);
+  background: var(--board);
+  border-bottom: 1px solid var(--trace);
+}
+
+.panel-bar kbd {
+  padding: 1px var(--space-2);
+  border: 1px solid var(--trace-strong);
+  border-radius: 3px;
+  color: var(--silk-muted);
+  font: 0.75rem var(--font-mono);
+}
+
+[data-scene="on"][data-view="panel"] main .container {
+  padding-inline: var(--space-6);
+}
+
+[data-scene="on"][data-view="panel"] .page {
+  padding-block: var(--space-6) var(--space-12);
+}
+
+/* Petits écrans en 3D (sur demande) : textes en pleine largeur, étapes en bas. */
+@media (max-width: 47.99rem) {
+  .tour-side {
+    right: 0;
+    width: auto;
+    padding: var(--space-4);
+  }
+
+  .tour-rail {
+    top: auto;
+    bottom: 0;
+    right: 50%;
+    translate: 50% 0;
+  }
+
+  .tour-rail ol {
+    grid-auto-flow: column;
+  }
+
+  .tour-rail-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

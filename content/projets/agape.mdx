@@ -1,0 +1,76 @@
+export const meta = {
+  slug: "agape",
+  titre: "AGAPE",
+  resultat: "Plus de 100 utilisateurs en deux mois, sans store ni publicité",
+  description:
+    "Étude de cas AGAPE : compagnon spirituel chrétien pour les croyants francophones, avec IA, lecture de la Bible et progression, conçu et lancé seul avec 0 € d'infrastructure.",
+  composant: "Quartier AGAPE",
+  role: "Seul sur toute la chaîne : produit, design, développement, déploiement, acquisition",
+  periode: "Depuis avril 2026",
+  stack: ["Next.js", "Supabase", "Groq · Llama 3.3 70B", "PWA", "Web Push"],
+  ordre: 1,
+};
+
+{/* [À CONFIRMER] URL du site avant de renseigner meta.lien : agap-a4j6.vercel.app */}
+
+## Problème
+
+Les applications chrétiennes les plus utilisées (YouVersion, Glorify, Hallow) sont surtout pensées pour un public anglophone. Elles n'offrent ni accompagnement personnalisé par l'IA, ni vraie progression. À l'inverse, un assistant comme ChatGPT répond aux questions, mais sans cadre spirituel, sans connaître le parcours de la personne, et sans communauté ni routine quotidienne.
+
+Aucune application ne réunissait la foi, l'IA et la gamification pour les croyants francophones d'Afrique, qui utilisent surtout des téléphones Android avec une connexion instable. AGAPE réunit lecture de la Bible, prière, accompagnement par IA et progression quotidienne.
+
+## Mon rôle
+
+J'ai porté le projet seul, de bout en bout :
+
+- **Produit** : choix des fonctionnalités, priorités, parcours utilisateur.
+- **Design** : création du système visuel « Sacred Modernist ».
+- **Développement** : front, back et base de données, avec des assistants de code IA (Claude Code, puis OpenCode) que je pilote et dont je relis le résultat.
+- **Mise en production** : déploiement, notifications, suivi.
+- **Acquisition** : lancement et animation de la communauté, notamment via WhatsApp. Des proches m'ont aidé en tournant des vidéos de présentation.
+
+## Contraintes
+
+- **0 € d'infrastructure** : tout repose sur des offres gratuites.
+- **Pas de carte bancaire internationale** : je suis basé en Côte d'Ivoire, donc les services payables uniquement par carte (Stripe, API OpenAI) étaient exclus d'emblée.
+- **Un public mobile, connexion fragile** : public visé francophone, en majorité sur Android, avec un réseau parfois faible. Il fallait un mode hors ligne.
+- **Confidentialité** : la communauté est anonyme (pseudonymes bibliques) et les publications expirent au bout de 7 jours.
+- **Temps limité** : un développement en solo, en parallèle d'un emploi.
+
+## Décisions techniques
+
+<Schema titre="C4 · niveau 2 (conteneurs)">Schéma à insérer : PWA (Next.js sur Vercel), Supabase (PostgreSQL, authentification, stockage, temps réel, Edge Functions planifiées), Groq, API bolls.life, notifications Web Push.</Schema>
+
+{/* [À CONFIRMER] Aucun RAG ni pgvector : le contexte de l'IA vient uniquement du profil injecté dans le prompt. */}
+
+1. **Groq plutôt qu'OpenAI.** Le modèle Llama 3.3 70B sur Groq répond très vite et coûte presque rien. C'était la seule option compatible avec un budget nul et l'absence de carte bancaire internationale. L'IA ne s'appuie pas sur une base documentaire : je lui transmets le profil de la personne (dénomination, maturité spirituelle, défi du moment) pour personnaliser chaque réponse.
+
+2. **Une concordance générée par l'IA et mise en cache, plutôt qu'une API externe.** La concordance Strong donne le sens des mots hébreux et grecs d'origine. Plutôt que de dépendre d'un service externe comme STEP Bible, je génère les définitions en français avec le LLM et je les garde 30 jours en cache dans Supabase. Résultat : des définitions en français, aucune panne possible côté fournisseur, et chaque mot n'est généré qu'une fois.
+
+3. **Une PWA d'abord, les stores ensuite.** Une application web installable se lance sans frais, alors que le compte développeur Apple coûte 99 $ par an, et chaque correction est en ligne immédiatement. Service worker et IndexedDB assurent le mode hors ligne. Le compromis, assumé : sur iPhone, les notifications ne fonctionnent qu'une fois la PWA installée sur l'écran d'accueil. Le passage aux stores est préparé avec Capacitor, testé sur iOS.
+
+4. **Des écoutes comptées une seule fois.** Sur l'espace gospel, une écoute ne compte que si elle dépasse 30 secondes, et une seule fois par utilisateur, par morceau et par jour (clé composite). Le premier comptage, sans ces règles, affichait 47 écoutes après une heure de tests.
+
+## Résultats
+
+{/* [À METTRE À JOUR] nombre d'utilisateurs actuel ; ajouter conversations et temps de réponse depuis le dashboard. */}
+
+- **107 utilisateurs** en deux mois, sans store ni publicité, uniquement par le bouche-à-oreille et les groupes WhatsApp. L'objectif de 100 est dépassé.
+- **Une croissance par paliers** : 34 utilisateurs au lancement, 71 après un partage coordonné à heure fixe, 103 après les vidéos de présentation.
+- **67 utilisateurs** avec une série d'activité quotidienne en cours.
+- **Appareils détectés** : 26 iOS, 9 Android, 5 ordinateurs. Les comptes plus anciens n'ont pas d'appareil enregistré, car le suivi a été ajouté en cours de route.
+- **Des retours qualitatifs** : les « Flammes Spirituelles », un verset envoyé chaque jour entre amis, ont suscité les réactions les plus fortes. Un artiste a proposé l'un de ses morceaux à l'espace gospel.
+
+## Liens
+
+{/* [À CONFIRMER] URL du site ; [À FOURNIR] liens publics des vidéos (tutoriel d'installation, vidéo des nouveautés). Ne pas citer l'ancien dépôt Agapev2. */}
+
+- **Application** : bêta publique en PWA. Lien à venir.
+- **Code source** : dépôt privé, que je peux présenter en entretien.
+
+## Ce que je referais autrement
+
+- **Mesurer dès le premier jour.** Environ 60 % des utilisateurs n'ont pas d'appareil enregistré, parce que j'ai ajouté le suivi trop tard. Ces données manquent aujourd'hui pour décider des priorités.
+- **Auditer avant de déclarer une fonctionnalité livrée.** Un audit du code a montré un avancement réel de 72 %, alors que je l'estimais à 88 %. Par exemple : un minuteur de prière sans son, des publications jamais supprimées malgré la règle des 7 jours, une progression des parcours non enregistrée.
+- **Écrire des tests automatisés.** Il n'y en a encore aucun : c'est la prochaine étape.
+- **Sauvegarder la configuration en dehors de mon ordinateur.** Après la suppression accidentelle d'un projet, j'ai dû régénérer plusieurs clés d'API.

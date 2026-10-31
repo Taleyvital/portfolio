@@ -1,0 +1,46 @@
+export const meta = {
+  slug: "djor",
+  titre: "Djor",
+  resultat: "La revente de billets entre particuliers, payée par Mobile Money",
+  description:
+    "Étude de cas Djor : place de marché P2P de revente de billets avec paiement Mobile Money et séquestre.",
+  composant: "L'Arène",
+  role: "Architecture, intégration des paiements, développement",
+  periode: "2026",
+  stack: ["Next.js", "PostgreSQL", "CinetPay", "Webhooks"],
+  lien: "https://example.com/djor",
+  ordre: 3,
+};
+
+> **[DÉMO]** Contenu de démonstration à remplacer par l'étude de cas réelle.
+
+## Problème
+
+À Abidjan, la revente de billets d'événements passe par des groupes WhatsApp, sans aucune garantie pour l'acheteur ni pour le vendeur.
+
+## Mon rôle
+
+J'ai conçu le parcours de séquestre, intégré le paiement Mobile Money et développé la plateforme.
+
+## Contraintes
+
+- Paiements Orange Money, MTN et Wave, avec des confirmations parfois tardives.
+- Fraude au billet dupliqué.
+- Connexions mobiles instables.
+
+## Décisions
+
+<Schema titre="C4 · niveau 2 (conteneurs)">Schéma à insérer : application web, API, file de webhooks, agrégateur de paiement, base de données.</Schema>
+
+1. **Séquestre jusqu'au contrôle du billet.** Le vendeur est payé après l'événement, pas à la vente.
+2. **Webhooks idempotents.** Une confirmation de paiement reçue deux fois ne crée jamais deux commandes.
+3. **Billet nominatif régénéré à la revente.** L'ancien QR code est invalidé.
+
+## Résultat
+
+- [DÉMO] 300 billets revendus sur le premier événement pilote.
+- [DÉMO] Aucun litige de double vente.
+
+## Ce que je referais autrement
+
+Je simulerais les retards de webhooks dès les tests, plutôt que de les découvrir en production.
