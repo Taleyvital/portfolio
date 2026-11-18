@@ -9,7 +9,7 @@ import {
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
-// Toute la pièce est peinte par sommet (attribut color) : deux matériaux suffisent,
+// Tout le décor est peint par sommet (attribut color) : deux matériaux suffisent,
 // et chaque matériau ne coûte qu'un draw call une fois les géométries fusionnées.
 // Les géométries sont converties en non indexées pour pouvoir toutes les fusionner.
 

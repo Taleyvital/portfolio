@@ -4,7 +4,7 @@ import { projets } from "@/lib/projets";
 import { site } from "@/lib/site";
 
 /**
- * Texte de la visite de la pièce (accueil en mode 3D) : une section par étape, rendue côté serveur.
+ * Texte de la visite du parcours (accueil en mode 3D) : une section par étape, rendue côté serveur.
  * Le CSS n'affiche que l'étape courante (html[data-station]) ; sans attribut, c'est l'intro :
  * le H1 reste l'élément LCP, et nom, disponibilité, CV, LinkedIn, GitHub et contact sont visibles d'emblée.
  */
@@ -34,13 +34,13 @@ export function RoomHud() {
           </a>
         </div>
         <p className="tour-hint" aria-hidden="true">
-          <span className="tour-hint-mouse" /> Faites défiler pour explorer
+          <span className="tour-hint-mouse" /> Faites défiler ou utilisez les flèches pour explorer
         </p>
       </section>
 
       <section className="tour-step tour-side" data-step="1" aria-labelledby="hud-projets">
         <h2 id="hud-projets">Projets livrés</h2>
-        <p className="tour-lead">Cliquez un cadre au mur, ou choisissez ici.</p>
+        <p className="tour-lead">Cliquez un panneau du parcours, ou choisissez ici.</p>
         <ul className="tour-list">
           {projets.map((p) => (
             <li key={p.slug}>
@@ -91,12 +91,12 @@ export function RoomHud() {
   );
 }
 
-/** Barre en tête du panneau de contenu, en mode 3D : retour à la pièce (aussi avec Échap). */
+/** Barre en tête du panneau de contenu, en mode 3D : retour au parcours (aussi avec Échap). */
 export function PanelBar() {
   return (
     <div className="panel-bar">
       <Link href="/" className="text-link">
-        ← Retour à la pièce
+        ← Retour au parcours
       </Link>
       <kbd>Échap</kbd>
     </div>

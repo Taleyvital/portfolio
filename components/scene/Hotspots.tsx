@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { BoxGeometry } from "three";
-import { type SpotId, spots } from "@/lib/three/room";
+import { type SpotId, spots } from "@/lib/three/world";
 
 type Props = {
   hovered: SpotId | null;
@@ -14,7 +14,7 @@ type Props = {
 const CLICK_TOLERANCE_PX = 6;
 
 /**
- * Zones de clic invisibles (aucun draw call) sur les objets qui mènent à une page : cadres, écran, téléphone.
+ * Zones de clic invisibles (aucun draw call) sur les objets qui mènent à une page : panneaux, arche, borne.
  * Raccourci pointeur : chaque destination existe aussi en lien HTML (HUD et menu).
  */
 export function Hotspots({ hovered, setHovered, onSelect }: Props) {
@@ -36,6 +36,7 @@ export function Hotspots({ hovered, setHovered, onSelect }: Props) {
           key={s.id}
           geometry={geometry}
           position={s.center}
+          rotation-y={s.rotationY}
           scale={s.size}
           visible={false}
           onPointerOver={(e) => {

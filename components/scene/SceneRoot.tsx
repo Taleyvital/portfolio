@@ -4,8 +4,8 @@ import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { initSceneMode, setPaused, setSceneMode, useSceneMode } from "@/lib/scene-mode";
-import { goToStation, nudgeTour, tour, useStation } from "@/lib/scroll-tour";
-import { LAST_STATION, spotForPath } from "@/lib/three/room";
+import { goToStation, nudgeLateral, nudgeTour, tour, useStation } from "@/lib/scroll-tour";
+import { LAST_STATION, spotForPath } from "@/lib/three/world";
 
 // Chunk séparé : three, R3F et drei ne sont jamais dans le JS initial.
 const Scene = dynamic(() => import("@/components/scene/Scene"), { ssr: false });
@@ -35,9 +35,13 @@ function usePageSettled() {
 const WHEEL_STEP = 1 / 700;
 const TOUCH_STEP = 1 / 260;
 const SNAP_MS = 180;
+// Flèches maintenues : l'avatar avance ou glisse en continu, comme dans un jeu.
+const HOLD_STATION_RATE = 1.1;
+const HOLD_LATERAL_RATE = 2.4;
+const MOVE_KEYS = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 
 /**
- * Visite de la pièce à l'accueil : la molette, le doigt et le clavier pilotent la caméra au lieu de faire
+ * Visite du parcours à l'accueil : la molette, le doigt et le clavier pilotent la caméra au lieu de faire
  * défiler la page (choix assumé du propriétaire, comme dans la vidéo de référence). Seulement en mode 3D
  * et à l'accueil ; les panneaux de contenu gardent le défilement natif, et le menu reste un accès direct.
  */
@@ -46,6 +50,9 @@ function useCapturedScroll(enabled: boolean) {
     if (!enabled) return;
     let snap = 0;
     let touchY: number | null = null;
+    let moveRaf = 0;
+    let lastMove = 0;
+    const held = new Set<string>();
     const settle = () => {
       window.clearTimeout(snap);
       snap = window.setTimeout(() => goToStation(tour.target), SNAP_MS);
@@ -56,6 +63,24 @@ function useCapturedScroll(enabled: boolean) {
       const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * 800 : e.deltaY;
       nudgeTour(Math.max(-0.5, Math.min(0.5, px * WHEEL_STEP)));
       settle();
+    };
+    const move = (now: number) => {
+      const dt = Math.min((now - lastMove) / 1000, 0.05);
+      lastMove = now;
+      const ahead = (held.has("ArrowUp") ? 1 : 0) - (held.has("ArrowDown") ? 1 : 0);
+      const side = (held.has("ArrowRight") ? 1 : 0) - (held.has("ArrowLeft") ? 1 : 0);
+      if (ahead) nudgeTour(ahead * HOLD_STATION_RATE * dt);
+      if (side) nudgeLateral(side * HOLD_LATERAL_RATE * dt);
+      moveRaf = ahead || side ? requestAnimationFrame(move) : 0;
+    };
+    const startMove = () => {
+      if (moveRaf) return;
+      lastMove = performance.now();
+      moveRaf = requestAnimationFrame(move);
+    };
+    const stopMove = () => {
+      if (moveRaf) cancelAnimationFrame(moveRaf);
+      moveRaf = 0;
     };
     const onTouchStart = (e: TouchEvent) => {
       touchY = e.touches[0]?.clientY ?? null;
@@ -71,32 +96,61 @@ function useCapturedScroll(enabled: boolean) {
       touchY = null;
       goToStation(tour.target);
     };
-    const onKey = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       const el = document.activeElement;
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return;
+
+      if (MOVE_KEYS.has(e.key)) {
+        e.preventDefault();
+        window.clearTimeout(snap);
+        if (held.has(e.key)) return; // la répétition du clavier est déjà couverte par la boucle
+        held.add(e.key);
+        // Petit pas immédiat pour qu'un appui bref se voie, puis mouvement continu tant que la touche reste enfoncée.
+        if (e.key === "ArrowUp") nudgeTour(0.16);
+        else if (e.key === "ArrowDown") nudgeTour(-0.16);
+        else if (e.key === "ArrowRight") nudgeLateral(0.24);
+        else nudgeLateral(-0.24);
+        startMove();
+        return;
+      }
+
       const onControl = el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement;
       const current = Math.round(tour.target);
       let next: number | null = null;
-      if (e.key === "ArrowDown" || e.key === "PageDown" || (e.key === " " && !onControl && !e.shiftKey)) next = current + 1;
-      else if (e.key === "ArrowUp" || e.key === "PageUp" || (e.key === " " && !onControl && e.shiftKey)) next = current - 1;
+      if (e.key === "PageDown" || (e.key === " " && !onControl && !e.shiftKey)) next = current + 1;
+      else if (e.key === "PageUp" || (e.key === " " && !onControl && e.shiftKey)) next = current - 1;
       else if (e.key === "Home") next = 0;
       else if (e.key === "End") next = LAST_STATION;
       if (next === null) return;
       e.preventDefault();
       goToStation(next);
     };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (!MOVE_KEYS.has(e.key)) return;
+      held.delete(e.key);
+      if (held.size === 0) stopMove();
+    };
+    const onBlur = () => {
+      held.clear();
+      stopMove();
+    };
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: false });
     window.addEventListener("touchend", onTouchEnd);
-    window.addEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
     return () => {
       window.clearTimeout(snap);
+      stopMove();
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
-      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
     };
   }, [enabled]);
 }
@@ -127,12 +181,12 @@ export function SceneRoot() {
   useCapturedScroll(touring);
   useActiveStation(touring);
 
-  // Accueil = pièce plein écran ; autres routes = contenu dans un panneau par-dessus la pièce.
+  // Accueil = parcours plein écran ; autres routes = contenu dans un panneau par-dessus le parcours.
   useEffect(() => {
     document.documentElement.dataset.view = pathname === "/" ? "map" : "panel";
   }, [pathname]);
 
-  // Échap ferme le panneau et ramène à la pièce.
+  // Échap ferme le panneau et ramène au parcours.
   useEffect(() => {
     if (!is3d || pathname === "/") return;
     const onKey = (e: KeyboardEvent) => {
@@ -160,7 +214,7 @@ export function SceneRoot() {
         ) : (
           <>
             <span className="silk" role="status">
-              <span className="led" aria-hidden="true" /> Chargement de la pièce
+              <span className="led" aria-hidden="true" /> Chargement du parcours
             </span>
             <button type="button" className="dock-btn" onClick={() => setSceneMode("light")}>
               Passer

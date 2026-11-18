@@ -1,18 +1,23 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { LAST_STATION } from "@/lib/three/room";
+import { LAST_STATION } from "@/lib/three/world";
 
-// Visite de la pièce à l'accueil : la molette, le tactile et le clavier font avancer `target` (0 → dernière étape) ;
-// la caméra suit `value`, amortie vers `target` dans la boucle de rendu (components/scene/RoomCamera.tsx).
+// Visite du parcours à l'accueil : la molette, le tactile et le clavier font avancer `target` (0 → dernière étape) ;
+// la caméra suit `value`, amortie vers `target` dans la boucle de rendu (components/scene/WalkCamera.tsx).
 // L'étape courante (arrondi de `value`) est publiée sur html[data-station] pour le HUD.
 
 export const tour = {
   target: 0,
   value: 0,
+  /** Écart latéral courant et visé, en mètres (flèches gauche/droite). */
+  lateral: 0,
+  lateralTarget: 0,
   /** Branché par la scène : demande une image (frameloop="demand"). */
   invalidate: () => {},
 };
+
+export const LATERAL_MAX = 0.95;
 
 let station = 0;
 const listeners = new Set<() => void>();
@@ -22,6 +27,12 @@ const clamp = (v: number) => Math.max(0, Math.min(LAST_STATION, v));
 /** Déplace la cible du défilement, puis demande une image. */
 export function nudgeTour(delta: number) {
   tour.target = clamp(tour.target + delta);
+  tour.invalidate();
+}
+
+/** Déplace l'avatar latéralement sur le chemin (gauche/droite), sans quitter le parcours. */
+export function nudgeLateral(delta: number) {
+  tour.lateralTarget = Math.max(-LATERAL_MAX, Math.min(LATERAL_MAX, tour.lateralTarget + delta));
   tour.invalidate();
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { goToStation, useStation } from "@/lib/scroll-tour";
-import { stations } from "@/lib/three/room";
+import { stations } from "@/lib/three/world";
 
 /** Points d'étape de la visite : on peut sauter directement à une étape, à la souris ou au clavier. */
 export function TourRail() {

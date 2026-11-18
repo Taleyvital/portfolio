@@ -4,15 +4,14 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { AdditiveBlending, CanvasTexture, type InstancedMesh, MeshBasicMaterial, Object3D, PlaneGeometry } from "three";
 import { power } from "@/components/scene/power";
+import { pathBasis } from "@/lib/three/path";
 import { mulberry32, range } from "@/lib/three/rng";
 
-const MOTES = 70;
-// Volume traversé par le rayon de soleil, de la fenêtre vers le mur du fond.
-const BEAM = { x: [0.8, 3.8], y: [0.5, 2.4], z: [-2.4, 0.3] } as const;
+const MOTES = 90;
 
 type Mote = { x: number; y: number; z: number; drift: number; phase: number; size: number };
 
-// Halo radial de 32 px : un grain de poussière éclairé, sans post-traitement.
+// Halo radial de 32 px : un insecte lumineux ou un pollen, sans post-traitement.
 function haloTexture() {
   const size = 32;
   const canvas = document.createElement("canvas");
@@ -26,21 +25,26 @@ function haloTexture() {
   return new CanvasTexture(canvas);
 }
 
-/** Poussière qui flotte dans le rayon de soleil (mouvement lent, en pause avec les animations). */
-export function Pulses({ paused }: { paused: boolean }) {
+/** Lucioles réparties le long du chemin, pour donner du relief à la profondeur. */
+export function Ambient({ paused }: { paused: boolean }) {
   const mesh = useRef<InstancedMesh>(null);
   const time = useRef(0);
 
   const motes = useMemo<Mote[]>(() => {
-    const rng = mulberry32(42);
-    return Array.from({ length: MOTES }, () => ({
-      x: range(rng, ...BEAM.x),
-      y: range(rng, ...BEAM.y),
-      z: range(rng, ...BEAM.z),
-      drift: range(rng, 0.02, 0.06),
-      phase: rng() * Math.PI * 2,
-      size: range(rng, 0.015, 0.035),
-    }));
+    const rng = mulberry32(7);
+    return Array.from({ length: MOTES }, () => {
+      const { p, f, r } = pathBasis(rng());
+      const lateral = range(rng, -5, 5);
+      const along = range(rng, -1.5, 1.5);
+      return {
+        x: p.x + r.x * lateral + f.x * along,
+        y: range(rng, 0.35, 2.6),
+        z: p.z + r.z * lateral + f.z * along,
+        drift: range(rng, 0.15, 0.45),
+        phase: rng() * Math.PI * 2,
+        size: range(rng, 0.025, 0.055),
+      };
+    });
   }, []);
 
   const { geometry, material } = useMemo(
@@ -50,7 +54,7 @@ export function Pulses({ paused }: { paused: boolean }) {
         map: haloTexture(),
         color: "#ffe2b0",
         transparent: true,
-        opacity: 0.45,
+        opacity: 0.5,
         depthWrite: false,
         blending: AdditiveBlending,
         toneMapped: false,
@@ -76,7 +80,11 @@ export function Pulses({ paused }: { paused: boolean }) {
     if (!paused) time.current += Math.min(delta, 0.1);
     const t = time.current;
     motes.forEach((p, i) => {
-      o.position.set(p.x + Math.sin(t * 0.3 + p.phase) * 0.08, p.y + Math.sin(t * p.drift * 6 + p.phase) * 0.15, p.z);
+      o.position.set(
+        p.x + Math.sin(t * p.drift + p.phase) * 0.35,
+        p.y + Math.sin(t * p.drift * 1.7 + p.phase) * 0.12,
+        p.z + Math.cos(t * p.drift + p.phase) * 0.25,
+      );
       o.quaternion.copy(camera.quaternion); // toujours face à la caméra
       o.scale.setScalar(p.size * power.value);
       o.updateMatrix();

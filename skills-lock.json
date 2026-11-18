@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "router": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "router/SKILL.md",
+      "computedHash": "4f61fa3c756baaa5c715f0cf99ae906aed28130a94786c735ef6574230f88d04"
+    },
+    "threejs-gltf-loading": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-engines/threejs-gltf-loading/SKILL.md",
+      "computedHash": "12d3d6031834f6c68513954108504b6e2bbc31ed33d3da55d50b72688b775ff1"
+    },
+    "threejs-materials-lighting": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-engines/threejs-materials-lighting/SKILL.md",
+      "computedHash": "139314b34394ad815f9711ceda0955d105f2c9de28362778f26debd99f3d3919"
+    },
+    "threejs-scene-setup": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-engines/threejs-scene-setup/SKILL.md",
+      "computedHash": "5fbfdbf8ec5267f1634de3ff33ca6ff5549cac027b6ee06d4a600c57db1d0559"
+    }
+  }
+}

@@ -4,13 +4,15 @@ import { PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { PCFShadowMap } from "three";
+import { Ambient } from "@/components/scene/Ambient";
 import { Hotspots } from "@/components/scene/Hotspots";
 import { power } from "@/components/scene/power";
-import { Pulses } from "@/components/scene/Pulses";
-import { Room, SUN } from "@/components/scene/Room";
-import { FOV, RoomCamera } from "@/components/scene/RoomCamera";
+import { TourDriver } from "@/components/scene/TourDriver";
+import { Walker } from "@/components/scene/Walker";
+import { FOV, WalkCamera } from "@/components/scene/WalkCamera";
+import { SUN, World } from "@/components/scene/World";
 import { fallbackToLight, prefersReducedMotion, setSceneLoaded } from "@/lib/scene-mode";
-import type { Spot, SpotId } from "@/lib/three/room";
+import type { Spot, SpotId } from "@/lib/three/world";
 
 const TICK_FPS = 30;
 const MIN_DPR = 0.5;
@@ -47,10 +49,10 @@ function PowerOn() {
     power.value = 0;
     gl.compileAsync(scene, camera).then(() => {
       if (cancelled) return;
-      // Ombres statiques : une seule passe, une fois toute la pièce en place.
+      // Ombres statiques : une seule passe, une fois tout le parcours en place.
       gl.shadowMap.needsUpdate = true;
       setSceneLoaded(true);
-      // Mouvement réduit : pièce affichée d'emblée.
+      // Mouvement réduit : parcours affiché d'emblée.
       start.current = prefersReducedMotion() ? -Infinity : clock.getElapsedTime();
       invalidate();
     });
@@ -112,25 +114,25 @@ function DebugStats() {
   return null;
 }
 
-/** Lumière de fin d'après-midi : ciel lavande + soleil chaud qui entre par la fenêtre (2 lumières). */
+/** Lumière de fin d'après-midi : ciel lavande et soleil chaud de biais sur le parcours (2 lumières). */
 function Lights() {
   return (
     <>
-      <hemisphereLight args={["#d8ccff", "#8a78a8", 1.7]} />
+      <hemisphereLight args={["#dbe6ff", "#6f7f5c", 1.15]} />
       <directionalLight
         position={SUN.position}
-        intensity={4.2}
-        color="#ffc98a"
+        intensity={2.8}
+        color="#ffd9ae"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0005}
-        shadow-normalBias={0.02}
-        shadow-camera-left={-7}
-        shadow-camera-right={7}
-        shadow-camera-top={7}
-        shadow-camera-bottom={-7}
+        shadow-normalBias={0.03}
+        shadow-camera-left={-26}
+        shadow-camera-right={26}
+        shadow-camera-top={30}
+        shadow-camera-bottom={-30}
         shadow-camera-near={1}
-        shadow-camera-far={25}
+        shadow-camera-far={80}
       >
         <object3D attach="target" position={SUN.target} />
       </directionalLight>
@@ -167,7 +169,7 @@ export default function Scene({ spot, paused, debug, onSelect }: Props) {
       dpr={dpr}
       flat
       shadows={shadows && { enabled: true, type: PCFShadowMap, autoUpdate: false }}
-      camera={{ fov: FOV, near: 0.05, far: 60, position: [0, 1.75, 5.4] }}
+      camera={{ fov: FOV, near: 0.1, far: 140, position: [0, 2.2, 14] }}
       // ?debug : le canvas garde son image, pour les captures automatisées (toDataURL).
       gl={{ antialias: maxDpr < 1.5, powerPreference: "high-performance", alpha: false, preserveDrawingBuffer: debug }}
     >
@@ -180,12 +182,15 @@ export default function Scene({ spot, paused, debug, onSelect }: Props) {
           onIncline={() => setDpr((d) => Math.min(maxDpr, d + 0.25))}
         />
       )}
-      <color attach="background" args={["#14111c"]} />
+      <color attach="background" args={["#9fb7e0"]} />
+      <fog attach="fog" args={["#c8d4ec", 30, 100]} />
       <Lights />
-      <Room hovered={hovered} active={active} />
-      <Pulses paused={paused} />
+      <World hovered={hovered} active={active} />
+      <TourDriver spot={spot} />
+      <Walker paused={paused} />
+      <WalkCamera spot={spot} />
+      <Ambient paused={paused} />
       <Hotspots hovered={hovered} setHovered={setHovered} onSelect={onSelect} />
-      <RoomCamera spot={spot} />
       <Ticker paused={paused} />
       <PowerOn />
       <ContextGuard />

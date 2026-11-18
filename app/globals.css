@@ -891,18 +891,15 @@ main,
   display: none;
 }
 
-[data-scene="on"] .site-header {
-  background: color-mix(in srgb, #14111c 70%, transparent);
-  border-bottom-color: transparent;
-}
-
-/* Vue « carte » (accueil) : le HUD de la visite remplace le contenu de la page. */
+/* Vue « carte » (accueil) : le parcours occupe tout l'écran, sans en-tête de site. */
+[data-scene="on"][data-view="map"] .site-header,
 [data-scene="on"][data-view="map"] main {
   display: none;
 }
 
 [data-scene="on"][data-view="map"] .room-hud {
   display: block;
+  inset: var(--space-4);
 }
 
 .room-hud {
@@ -1134,7 +1131,7 @@ html[data-station="3"] .tour-step[data-step="3"] {
 }
 
 /* Vue « panneau » : la page s'ouvre à gauche, par-dessus la pièce, et défile seule.
-   Largeur 46rem : même valeur que PANEL dans components/scene/RoomCamera.tsx. */
+   Largeur 46rem : même valeur que PANEL dans components/scene/WalkCamera.tsx. */
 [data-scene="on"][data-view="panel"] main {
   position: fixed;
   top: 4.75rem;
